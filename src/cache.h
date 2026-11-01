@@ -40,6 +40,7 @@ typedef struct {
     Config config;
     CacheStats stats;
     CacheLine* cache_lines;
+    uint64_t access_time;
     // Useful cache properties.
     size_t num_blocks;
     size_t num_sets;

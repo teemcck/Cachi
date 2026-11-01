@@ -3,8 +3,8 @@ CPPFLAGS ?= -Isrc
 CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -O2
 TARGET := cache-simulator
 DEBUG_TARGET := cache-simulator-debug
-SOURCES := main.c src/cache.c src/hierarchy.c src/parse_config.c
-HEADERS := src/cache.h src/config.h src/hierarchy.h src/parse_config.h
+SOURCES := main.c src/cache.c src/replacement.c src/hierarchy.c src/parse_config.c
+HEADERS := src/cache.h src/config.h src/hierarchy.h src/parse_config.h src/replacement.h
 
 .PHONY: all debug run clean
 

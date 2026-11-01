@@ -1,10 +1,7 @@
 #include "cache.h"
+#include "replacement.h"
 #include <stdlib.h>
 #include <stdint.h>
-
-/*
- * Todo: implement cache access function.
- */
 
 static inline int is_power_of_two(size_t value) {
     return value != 0 && (value & (value - 1)) == 0;
@@ -17,6 +14,13 @@ static inline uint8_t log2_power_of_two(size_t value) {
         ++bits;
     }
     return bits;
+}
+
+static size_t find_invalid_line(const Cache* cache, size_t start, size_t end) {
+    for (size_t i = start; i < end; ++i) {
+        if (!cache->cache_lines[i].valid) return i;
+    }
+    return SIZE_MAX;
 }
 
 /**
@@ -79,41 +83,44 @@ void cache_access(
     if (cache == NULL) return;
 
     // From address, find the set index, tag, offset.
-    const uint64_t offset_mask = cache->offset_bits == ADDRESS_BITS
-        ? UINT64_MAX
-        : (UINT64_C(1) << cache->offset_bits) - 1;
     const uint64_t set_mask = (uint64_t)(cache->num_sets - 1);
 
-    const uint64_t offset = address & offset_mask;
     const uint64_t set_index =
         (address >> cache->offset_bits) & set_mask;
     const uint64_t tag =
         address >> (cache->offset_bits + cache->set_index_bits);
 
-    // Cache lines are stored sequentially in large array. 
-    // traversable by searching for tag at indices [set_index * associativity, (set_index + 1) * associativity)
-    size_t s_ind = set_index * cache->config.associativity;
-    size_t e_ind = s_ind + cache->config.associativity;
-    for (size_t i = s_ind; i < e_ind; ++i) {
-        CacheLine* cl = &cache->cache_lines[i];
-        if (cl->valid && cl->tag == tag) {
-            // Hit data.
-            // If the operation is a write, write the data and make dirty.
-            // If the operation is a read, do nothing.
-            // Update the cache stats.
-        }
-        else {
-            // Place value in the cache.
+    const size_t ways = (size_t)cache->config.associativity;
+    const size_t start = (size_t)set_index * ways;
+    const size_t end = start + ways;
+    const uint64_t now = ++cache->access_time;
+
+    // Search the whole set before deciding this is a miss.
+    for (size_t i = start; i < end; ++i) {
+        CacheLine* line = &cache->cache_lines[i];
+        if (line->valid && line->tag == tag) {
+            ++cache->stats.hits;
+            line->last_access = now;
+            if (operation == CACHE_WRITE) line->dirty = true;
+            return;
         }
     }
 
-    // TODO: Use these fields to perform the cache access.
-    (void)offset;
-    (void)set_index;
-    (void)tag;
-    (void)operation;
+    ++cache->stats.misses;
+    size_t victim_index = find_invalid_line(cache, start, end);
+    if (victim_index == SIZE_MAX) {
+        victim_index = replacement_choose_victim(cache, start, end);
+        CacheLine* victim = &cache->cache_lines[victim_index];
+        ++cache->stats.evictions;
+        if (victim->dirty) ++cache->stats.writebacks;
+    }
 
-    return;
+    CacheLine* line = &cache->cache_lines[victim_index];
+    line->tag = tag;
+    line->valid = true;
+    line->dirty = operation == CACHE_WRITE;
+    line->insertion_time = now;
+    line->last_access = now;
 }
 
 void cache_destroy(Cache* cache) {
