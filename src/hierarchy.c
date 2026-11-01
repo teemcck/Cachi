@@ -33,10 +33,27 @@ CacheHierarchy* create_cache_hierarchy(const char* input) {
 }
 
 void free_cache_hierarchy(CacheHierarchy* hierarchy) {
+    if (hierarchy == NULL) return;
     for (size_t i = 0; i < hierarchy->num_levels; ++i) {
         // Free individual caches stored in hierarchy.
         cache_destroy(hierarchy->levels[i]);
     }
     // Free hierarchy data structure.
+    free(hierarchy->levels);
     free(hierarchy);
+}
+
+CacheAccessResult hierarchy_access(
+    CacheHierarchy* hierarchy,
+    uint64_t address,
+    CacheOperation operation
+) {
+    if (hierarchy == NULL) return CACHE_MISS;
+
+    for (size_t i = 0; i < hierarchy->num_levels; ++i) {
+        if (cache_access(hierarchy->levels[i], address, operation) == CACHE_HIT) {
+            return CACHE_HIT;
+        }
+    }
+    return CACHE_MISS;
 }

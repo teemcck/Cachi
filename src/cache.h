@@ -57,6 +57,12 @@ typedef enum {
     CACHE_WRITE
 } CacheOperation;
 
+/* Result of looking up an address in one cache level. */
+typedef enum {
+    CACHE_MISS,
+    CACHE_HIT
+} CacheAccessResult;
+
 /*
  * Dynamically allocates new cache using provided configuration.
  */
@@ -66,7 +72,7 @@ Cache* create_cache(const Config* config);
  * Creates an access request to specified cache.
  * Operation defines read/write/etc.
  */
-void cache_access(
+CacheAccessResult cache_access(
     Cache *cache,
     uint64_t address,
     CacheOperation operation

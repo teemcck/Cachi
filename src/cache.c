@@ -75,12 +75,16 @@ Cache* create_cache(const Config* config) {
     return cache;
 }
 
-void cache_access(    
+/*
+ * Performs a cache access.
+ * Returns !0 if the cache missed.
+ */
+CacheAccessResult cache_access(    
     Cache *cache,
     uint64_t address,
     CacheOperation operation
 ) {
-    if (cache == NULL) return;
+    if (cache == NULL) return CACHE_MISS;
 
     // From address, find the set index, tag, offset.
     const uint64_t set_mask = (uint64_t)(cache->num_sets - 1);
@@ -102,7 +106,7 @@ void cache_access(
             ++cache->stats.hits;
             line->last_access = now;
             if (operation == CACHE_WRITE) line->dirty = true;
-            return;
+            return CACHE_HIT;
         }
     }
 
@@ -121,6 +125,7 @@ void cache_access(
     line->dirty = operation == CACHE_WRITE;
     line->insertion_time = now;
     line->last_access = now;
+    return CACHE_MISS;
 }
 
 void cache_destroy(Cache* cache) {
