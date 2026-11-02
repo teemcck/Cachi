@@ -19,12 +19,12 @@ This creates the `cachi` executable. To build the debug executable, run
 Pass a cache hierarchy configuration file and a memory trace:
 
 ```sh
-./cachi configs/example-multilevel.cfg benchmark-trace-files/fib-trace.txt
+./cachi configs/example-multilevel.cfg benchmarks/traces/fib-trace.txt
 ```
 
-Example configurations are provided in `configs/`, and ready-to-run benchmark
-traces for array, Fibonacci, and strided access patterns are provided in
-`benchmark-trace-files/`.
+Example configurations are provided in `configs/`. Benchmark programs are in
+`benchmarks/programs/`, with ready-to-run traces for array, Fibonacci, and
+strided access patterns in `benchmarks/traces/`.
 
 The simulator prints hit, miss, eviction, and writeback counts for each cache
 level. `example-single-level.cfg` demonstrates a direct-mapped L1; the
