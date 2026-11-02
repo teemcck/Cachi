@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include "config.h"
 
 // Caches are 64 bit addressed by default.

@@ -1,5 +1,6 @@
 #include "cache.h"
 #include "replacement.h"
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -77,7 +78,7 @@ Cache* create_cache(const Config* config) {
 
 /*
  * Performs a cache access.
- * Returns !0 if the cache missed.
+ * Returns CacheAccessResult to inform hierarchy.
  */
 CacheAccessResult cache_access(    
     Cache *cache,

@@ -31,7 +31,7 @@ void free_cache_hierarchy(CacheHierarchy* hierarchy);
  * 
  * Requests provide referenced memory address and Read/Write.
  */
-CacheAccessResult hierarchy_access(
+void hierarchy_access(
     CacheHierarchy* hierarchy,
     uint64_t address,
     CacheOperation operation

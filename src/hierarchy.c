@@ -43,17 +43,16 @@ void free_cache_hierarchy(CacheHierarchy* hierarchy) {
     free(hierarchy);
 }
 
-CacheAccessResult hierarchy_access(
+void hierarchy_access(
     CacheHierarchy* hierarchy,
     uint64_t address,
     CacheOperation operation
 ) {
-    if (hierarchy == NULL) return CACHE_MISS;
+    if (hierarchy == NULL) return;
 
     for (size_t i = 0; i < hierarchy->num_levels; ++i) {
         if (cache_access(hierarchy->levels[i], address, operation) == CACHE_HIT) {
-            return CACHE_HIT;
+            return;
         }
     }
-    return CACHE_MISS;
 }
